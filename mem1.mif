@@ -1,86 +1,167 @@
 WIDTH=64;
-DEPTH=64;
+DEPTH=128;
+
 ADDRESS_RADIX=DEC;
 DATA_RADIX=HEX;
 
 CONTENT BEGIN
--- ============================================================================
--- SEGMENT 0 (Addresses 0..15): Straight Track - Open Slalom
--- ============================================================================
-0  : 000000FFF8001FFF; -- Open road
-1  : 000000FFF8001FFF;
-2  : 000000FFF9801FFF; -- 2x2 Car: cols 15..16 (Left lane)
-3  : 000000FFF9801FFF;
-4  : 000000FFF8001FFF; -- 5-row reaction gap
-5  : 000000FFF8001FFF;
-6  : 000000FFF8001FFF;
-7  : 000000FFF8001FFF;
-8  : 000000FFF8001FFF;
-9  : 000000FFF8019FFF; -- 2x2 Car: cols 23..24 (Right lane)
-10 : 000000FFF8019FFF;
-11 : 000000FFF8001FFF; -- 5-row reaction gap
-12 : 000000FFF8001FFF;
-13 : 000000FFF8001FFF;
-14 : 000000FFF8001FFF;
-15 : 000000FFF8001FFF;
+-- =========================================================================
+-- SEGMENT 0: Straight with Center-Lane Blocker & Side Traffic (Anti-Camp!)
+-- =========================================================================
+0   : 000000FFF8001FFF;
+1   : 000000FFF8001FFF;
+2   : 000000FFF8181FFF; -- 2x2 Car DEAD CENTER at Col 19..20 (Hits car_col=19!)
+3   : 000000FFF8181FFF; -- 2x2 Car DEAD CENTER at Col 19..20
+4   : 000000FFF8001FFF;
+5   : 000000FFF8001FFF;
+6   : 000000FFF8001FFF;
+7   : 000000FFF9801FFF; -- 2x2 Car Left at Col 15..16
+8   : 000000FFF9801FFF; -- 2x2 Car Left at Col 15..16
+9   : 000000FFF8001FFF;
+10  : 000000FFF8001FFF;
+11  : 000000FFF8001FFF;
+12  : 000000FFF8061FFF; -- 2x2 Car Right at Col 21..22
+13  : 000000FFF8061FFF; -- 2x2 Car Right at Col 21..22
+14  : 000000FFF8001FFF;
+15  : 000000FFF8001FFF;
 
--- ============================================================================
--- SEGMENT 1 (Addresses 16..31): Straight Track - Wide Split & Center Dodge
--- ============================================================================
-16 : 000000FFF8001FFF; -- Open road
-17 : 000000FFF8001FFF;
-18 : 000000FFFE007FFF; -- Two 2x2 Cars: cols 13..14 & 25..26 (Wide 10-col center gap)
-19 : 000000FFFE007FFF;
-20 : 000000FFF8001FFF; -- 5-row reaction gap
-21 : 000000FFF8001FFF;
-22 : 000000FFF8001FFF;
-23 : 000000FFF8001FFF;
-24 : 000000FFF8001FFF;
-25 : 000000FFF8181FFF; -- 2x2 Car: cols 19..20 (Center dodge, 6-col gaps both sides)
-26 : 000000FFF8181FFF;
-27 : 000000FFF8001FFF; -- 5-row reaction gap
-28 : 000000FFF8001FFF;
-29 : 000000FFF8001FFF;
-30 : 000000FFF8001FFF;
-31 : 000000FFF8001FFF;
+-- =========================================================================
+-- SEGMENT 1: Left-to-Right S-Bend WITH Apex Traffic Cars
+-- =========================================================================
+16  : 000000FFF8001FFF; -- Road 13..26
+17  : 000000FFF0003FFF; -- Road 12..25
+18  : 000000FFC000FFFF; -- Road 10..23
+19  : 000000FF8601FFFF; -- Road  9..22 + Car at Col 17..18 (Blocks center-right!)
+20  : 000000FF0603FFFF; -- Road  8..21 + Car at Col 17..18
+21  : 000000FF8001FFFF; -- Road  9..22
+22  : 000000FFC000FFFF; -- Road 10..23
+23  : 000000FFE0007FFF; -- Road 11..24
+24  : 000000FFF8181FFF; -- Road 13..26 + Car at Col 19..20 (Blocks center crossover!)
+25  : 000000FFFE1807FF; -- Road 15..28 + Car at Col 19..20
+26  : 000000FFFF0003FF; -- Road 16..29
+27  : 000000FFFF8001FF; -- Road 17..30
+28  : 000000FFFFC030FF; -- Road 18..31 + Car at Col 26..27
+29  : 000000FFFF8031FF; -- Road 17..30 + Car at Col 26..27
+30  : 000000FFFE0007FF; -- Road 15..28
+31  : 000000FFFC000FFF; -- Road 14..27
 
--- ============================================================================
--- SEGMENT 2 (Addresses 32..47): Straight Track - Two-Car Weave
--- ============================================================================
-32 : 000000FFF8001FFF; -- Open road
-33 : 000000FFF8001FFF;
-34 : 000000FFFE061FFF; -- Two 2x2 Cars: cols 13..14 & 21..22 (4-col gaps: 15..20 or 23..26)
-35 : 000000FFFE061FFF;
-36 : 000000FFF8001FFF; -- 5-row reaction gap
-37 : 000000FFF8001FFF;
-38 : 000000FFF8001FFF;
-39 : 000000FFF8001FFF;
-40 : 000000FFF8001FFF;
-41 : 000000FFF8607FFF; -- Two 2x2 Cars: cols 17..18 & 25..26 (4-col gaps: 13..16 or 19..24)
-42 : 000000FFF8607FFF;
-43 : 000000FFF8001FFF; -- 5-row reaction gap
-44 : 000000FFF8001FFF;
-45 : 000000FFF8001FFF;
-46 : 000000FFF8001FFF;
-47 : 000000FFF8001FFF;
+-- =========================================================================
+-- SEGMENT 2: Right-to-Left S-Bend WITH Apex Traffic Cars
+-- =========================================================================
+32  : 000000FFF8001FFF; -- Road 13..26
+33  : 000000FFFC000FFF; -- Road 14..27
+34  : 000000FFFF0003FF; -- Road 16..29
+35  : 000000FFFF8181FF; -- Road 17..30 + Car at Col 19..20 (Blocks center-left!)
+36  : 000000FFFFC180FF; -- Road 18..31 + Car at Col 19..20
+37  : 000000FFFF8001FF; -- Road 17..30
+38  : 000000FFFF0003FF; -- Road 16..29
+39  : 000000FFFE0007FF; -- Road 15..28
+40  : 000000FFF8181FFF; -- Road 13..26 + Car at Col 19..20 (Blocks center crossover!)
+41  : 000000FFE0187FFF; -- Road 11..24 + Car at Col 19..20
+42  : 000000FFC000FFFF; -- Road 10..23
+43  : 000000FF8001FFFF; -- Road  9..22
+44  : 000000FF0C03FFFF; -- Road  8..21 + Car at Col 12..13
+45  : 000000FF8C01FFFF; -- Road  9..22 + Car at Col 12..13
+46  : 000000FFE0007FFF; -- Road 11..24
+47  : 000000FFF0003FFF; -- Road 12..25
 
--- ============================================================================
--- SEGMENT 3 (Addresses 48..63): Straight Track - Center Chute & Side Check
--- ============================================================================
-48 : 000000FFF8001FFF; -- Open road
-49 : 000000FFF8001FFF;
-50 : 000000FFF9819FFF; -- Two 2x2 Cars: cols 15..16 & 23..24 (6-col center chute: 17..22)
-51 : 000000FFF9819FFF;
-52 : 000000FFF8001FFF; -- 4-row reaction gap
-53 : 000000FFF8001FFF;
-54 : 000000FFF8001FFF;
-55 : 000000FFF8001FFF;
-56 : 000000FFF8601FFF; -- 2x2 Car: cols 17..18 (Left-center check, wide right lane 19..26)
-57 : 000000FFF8601FFF;
-58 : 000000FFF8001FFF; -- 6-row exit buffer for smooth transition into next segment
-59 : 000000FFF8001FFF;
-60 : 000000FFF8001FFF;
-61 : 000000FFF8001FFF;
-62 : 000000FFF8001FFF;
-63 : 000000FFF8001FFF;
+-- =========================================================================
+-- SEGMENT 3: Curved Chicane WITH Center + Side Traffic
+-- =========================================================================
+48  : 000000FFF8181FFF; -- Road 13..26 + Center Car at Col 19..20
+49  : 000000FFF0183FFF; -- Road 12..25 + Center Car at Col 19..20
+50  : 000000FFE0007FFF; -- Road 11..24
+51  : 000000FFC300FFFF; -- Road 10..23 + Left-Center Car at Col 14..15
+52  : 000000FFC300FFFF; -- Road 10..23 + Left-Center Car at Col 14..15
+53  : 000000FFE0007FFF; -- Road 11..24
+54  : 000000FFF0003FFF; -- Road 12..25
+55  : 000000FFF8181FFF; -- Road 13..26 + Center Car at Col 19..20
+56  : 000000FFFC180FFF; -- Road 14..27 + Center Car at Col 19..20
+57  : 000000FFFE0007FF; -- Road 15..28
+58  : 000000FFFF00C3FF; -- Road 16..29 + Right-Center Car at Col 24..25
+59  : 000000FFFF00C3FF; -- Road 16..29 + Right-Center Car at Col 24..25
+60  : 000000FFFE0007FF; -- Road 15..28
+61  : 000000FFFC000FFF; -- Road 14..27
+62  : 000000FFF8001FFF; -- Road 13..26
+63  : 000000FFF8001FFF; -- Road 13..26
+
+-- =========================================================================
+-- SEGMENT 4: Sweeping Left Turn (Col 5..18 - Col 19..20 is LETHAL WALL + Cars!)
+-- =========================================================================
+64  : 000000FFF8001FFF; -- Road 13..26
+65  : 000000FFF0183FFF; -- Road 12..25 + Car at Col 19..20
+66  : 000000FFE0187FFF; -- Road 11..24 + Car at Col 19..20
+67  : 000000FFC000FFFF; -- Road 10..23
+68  : 000000FF8001FFFF; -- Road  9..22
+69  : 000000FE0007FFFF; -- Road  7..20
+70  : 000000F8181FFFFF; -- Road  5..18 (Col 19 is WALL!) + Car at Col 11..12
+71  : 000000F8181FFFFF; -- Road  5..18 (Col 19 is WALL!) + Car at Col 11..12
+72  : 000000F8001FFFFF; -- Road  5..18 (Col 19 is WALL!)
+73  : 000000FE0007FFFF; -- Road  7..20
+74  : 000000FF8301FFFF; -- Road  9..22 + Car at Col 14..15
+75  : 000000FFC300FFFF; -- Road 10..23 + Car at Col 14..15
+76  : 000000FFE0007FFF; -- Road 11..24
+77  : 000000FFF0003FFF; -- Road 12..25
+78  : 000000FFF8001FFF; -- Road 13..26
+79  : 000000FFF8001FFF; -- Road 13..26
+
+-- =========================================================================
+-- SEGMENT 5: Sweeping Right Turn (Col 21..34 - Col 19..20 is LETHAL WALL + Cars!)
+-- =========================================================================
+80  : 000000FFF8001FFF; -- Road 13..26
+81  : 000000FFFC180FFF; -- Road 14..27 + Car at Col 19..20
+82  : 000000FFFE1807FF; -- Road 15..28 + Car at Col 19..20
+83  : 000000FFFF0003FF; -- Road 16..29
+84  : 000000FFFF8001FF; -- Road 17..30
+85  : 000000FFFFE0007F; -- Road 19..32
+86  : 000000FFFFF8181F; -- Road 21..34 (Col 19..20 is WALL!) + Car at Col 27..28
+87  : 000000FFFFF8181F; -- Road 21..34 (Col 19..20 is WALL!) + Car at Col 27..28
+88  : 000000FFFFF8001F; -- Road 21..34 (Col 19..20 is WALL!)
+89  : 000000FFFFE0007F; -- Road 19..32
+90  : 000000FFFF80C1FF; -- Road 17..30 + Car at Col 24..25
+91  : 000000FFFF00C3FF; -- Road 16..29 + Car at Col 24..25
+92  : 000000FFFE0007FF; -- Road 15..28
+93  : 000000FFFC000FFF; -- Road 14..27
+94  : 000000FFF8001FFF; -- Road 13..26
+95  : 000000FFF8001FFF; -- Road 13..26
+
+-- =========================================================================
+-- SEGMENT 6: Dense Highway Pack (Double Split-Lane + Center Gauntlet - 5 Cars!)
+-- =========================================================================
+96  : 000000FFF8001FFF;
+97  : 000000FFF8181FFF; -- Car 1: Center (Col 19..20)
+98  : 000000FFF8181FFF;
+99  : 000000FFF8001FFF;
+100 : 000000FFF8001FFF;
+101 : 000000FFF9819FFF; -- Car 2 & 3: Double Block at Left (Col 15..16) AND Right (Col 23..24)!
+102 : 000000FFF9819FFF; -- (Must thread the needle right down the middle!)
+103 : 000000FFF8001FFF;
+104 : 000000FFF8001FFF;
+105 : 000000FFF8001FFF;
+106 : 000000FFF8181FFF; -- Car 4: Center (Col 19..20 - Now must dodge OUT of the middle!)
+107 : 000000FFF8181FFF;
+108 : 000000FFF8001FFF;
+109 : 000000FFF8001FFF;
+110 : 000000FFF8C31FFF; -- Car 5 & 6: Double Block at Col 16..17 AND Col 22..23
+111 : 000000FFF8C31FFF;
+
+-- =========================================================================
+-- SEGMENT 7: High-Speed 4-Car Zig-Zag Slalom (Center -> Left -> Center -> Right)
+-- =========================================================================
+112 : 000000FFF8181FFF; -- Car 1: Center (Col 19..20)
+113 : 000000FFF8181FFF;
+114 : 000000FFF8001FFF;
+115 : 000000FFF8001FFF;
+116 : 000000FFF8C01FFF; -- Car 2: Left-Center (Col 16..17)
+117 : 000000FFF8C01FFF;
+118 : 000000FFF8001FFF;
+119 : 000000FFF8001FFF;
+120 : 000000FFF8181FFF; -- Car 3: Center (Col 19..20)
+121 : 000000FFF8181FFF;
+122 : 000000FFF8001FFF;
+123 : 000000FFF8001FFF;
+124 : 000000FFF8031FFF; -- Car 4: Right-Center (Col 22..23)
+125 : 000000FFF8031FFF;
+126 : 000000FFF8001FFF;
+127 : 000000FFF8001FFF;
 END;

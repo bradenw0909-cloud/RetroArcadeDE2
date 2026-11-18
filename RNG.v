@@ -1,28 +1,22 @@
 module rng (
-    input  wire       clk,        // Connect to 50 MHz clock in Qsys
-    input  wire       rst_n,      // Connect to reset_n in Qsys
-    input  wire       next_btn,   // Connect to a 1-bit Output PIO from Nios II
-    output reg  [1:0] current_seg // Connect to a 2-bit Input PIO to Nios II
+    input  wire       clk,        // 50 MHz system clock
+    input  wire       rst_n,      // Active-low system reset
+    input  wire       next_btn,   // ROW_CTRL_BASE[4] pulse from Nios II
+    output reg  [2:0] current_seg // 3-bit segment index to ROM address[6:4]
 );
 
-    // =========================================================
-    // PART 1: The Random Number Generator (LFSR)
-    // This spins constantly in the background to make random bits.
-    // =========================================================
+    // PART 1: 8-bit Fibonacci LFSR (x^8 + x^6 + x^5 + x^4 + 1)
     reg [7:0] rand_num;
     wire feedback = rand_num[7] ^ rand_num[5] ^ rand_num[4] ^ rand_num[3];
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-            rand_num <= 8'b1010_1101; // Starting seed (cannot be all 0s)
+            rand_num <= 8'b1010_1101;
         else
             rand_num <= {rand_num[6:0], feedback};
     end
 
-
-    // =========================================================
-    // PART 2: Detect when Nios II asks for a new track piece
-    // =========================================================
+    // PART 2: Rising-Edge Pulse Detector
     reg last_btn;
     wire ask_for_new_piece = (next_btn == 1'b1) && (last_btn == 1'b0);
 
@@ -33,59 +27,69 @@ module rng (
             last_btn <= next_btn;
     end
 
-
-    // =========================================================
-    // PART 3: YOUR LOGIC (The Whitelist / Outlaw Rules)
-    // Edit the 'case' block below to change which pieces are allowed!
-    // =========================================================
+    // PART 3: 8-State Whitelist / Outlaw Markov State Machine
+    // 3'd0: Straight Empty (Breather / Reset)
+    // 3'd1: Left Sweeping Curve (Out & Back)
+    // 3'd2: Right Sweeping Curve (Out & Back)
+    // 3'd3: Dual-Lane Staggered Traffic
+    // 3'd4: Center Island / Split-Lane Obstacle
+    // 3'd5: Tight S-Bend (Left-to-Right)
+    // 3'd6: Tight S-Bend (Right-to-Left)
+    // 3'd7: High-Speed Slalom (3 Staggered 2x2 Obstacles)
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            current_seg <= 2'd0; // Always start the race on a Straight (0)
+            current_seg <= 3'd0;
         end 
         else if (ask_for_new_piece) begin
-            
             case (current_seg)
-                // -------------------------------------------------
-                // RULE 1: Currently on a STRAIGHT (0)
-                // Whitelisted: Everything (0, 1, 2, or 3)
-                // -------------------------------------------------
-                2'd0: begin
-                    current_seg <= rand_num[1:0]; // Picks 0, 1, 2, or 3 randomly
+                3'd0: begin
+                    // From Straight: Allow any segment (0..7)
+                    current_seg <= rand_num[2:0];
                 end
 
-                // -------------------------------------------------
-                // RULE 2: Currently in a LEFT TURN (1)
-                // Outlawed: Right Turn (2) and Obstacle (3)
-                // Whitelisted: Straight (0) or another Left Turn (1)
-                // -------------------------------------------------
-                2'd1: begin
-                    if (rand_num[0] == 1'b0)
-                        current_seg <= 2'd0; // Go back to Straight
-                    else
-                        current_seg <= 2'd1; // Keep turning Left
+                3'd1: begin
+                    // From Left Curve: Allow Straight (0), Left Curve (1), or Staggered Traffic (3)
+                    // Outlaws immediate opposite S-bends (5,6) or dense Slalom (7)
+                    case (rand_num[1:0])
+                        2'b00: current_seg <= 3'd0;
+                        2'b01: current_seg <= 3'd1;
+                        2'b10: current_seg <= 3'd3;
+                        2'b11: current_seg <= 3'd0;
+                    endcase
                 end
 
-                // -------------------------------------------------
-                // RULE 3: Currently in a RIGHT TURN (2)
-                // Outlawed: Left Turn (1) and Obstacle (3)
-                // Whitelisted: Straight (0) or another Right Turn (2)
-                // -------------------------------------------------
-                2'd2: begin
-                    if (rand_num[0] == 1'b0)
-                        current_seg <= 2'd0; // Go back to Straight
-                    else
-                        current_seg <= 2'd2; // Keep turning Right
+                3'd2: begin
+                    // From Right Curve: Allow Straight (0), Right Curve (2), or Center Island (4)
+                    case (rand_num[1:0])
+                        2'b00: current_seg <= 3'd0;
+                        2'b01: current_seg <= 3'd2;
+                        2'b10: current_seg <= 3'd4;
+                        2'b11: current_seg <= 3'd0;
+                    endcase
                 end
 
-                // -------------------------------------------------
-                // RULE 4: Currently on an OBSTACLE (3)
-                // Outlawed: Everything except Straight (0)
-                // -------------------------------------------------
-                2'd3: begin
-                    current_seg <= 2'd0; // Always force a Straight next
+                3'd3, 3'd4: begin
+                    // From Traffic/Split-Lane: Allow Straight (0) or Gentle Curve (1 or 2)
+                    case (rand_num[1:0])
+                        2'b00: current_seg <= 3'd0;
+                        2'b01: current_seg <= 3'd1;
+                        2'b10: current_seg <= 3'd2;
+                        2'b11: current_seg <= 3'd0;
+                    endcase
                 end
+
+                3'd5, 3'd6: begin
+                    // From Tight S-Bends: Force Straight (0) or single gentle curve (1/2) to recover
+                    current_seg <= rand_num[0] ? 3'd0 : (current_seg == 3'd5 ? 3'd2 : 3'd1);
+                end
+
+                3'd7: begin
+                    // From High-Speed Slalom: Mandatory Straight (0) cooldown
+                    current_seg <= 3'd0;
+                end
+
+                default: current_seg <= 3'd0;
             endcase
-
         end
     end
 
