@@ -1,0 +1,219 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 2023  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 384 552)
+	(text "Nios" (rect 180 -1 197 11)(font "Arial" (font_size 10)))
+	(text "inst" (rect 8 536 20 548)(font "Arial" ))
+	(port
+		(pt 0 72)
+		(input)
+		(text "clk_clk" (rect 0 0 27 12)(font "Arial" (font_size 8)))
+		(text "clk_clk" (rect 4 61 46 72)(font "Arial" (font_size 8)))
+		(line (pt 0 72)(pt 160 72)(line_width 1))
+	)
+	(port
+		(pt 0 112)
+		(input)
+		(text "keys_export[2..0]" (rect 0 0 70 12)(font "Arial" (font_size 8)))
+		(text "keys_export[2..0]" (rect 4 101 106 112)(font "Arial" (font_size 8)))
+		(line (pt 0 112)(pt 160 112)(line_width 3))
+	)
+	(port
+		(pt 0 152)
+		(input)
+		(text "rom_data_high_export[31..0]" (rect 0 0 114 12)(font "Arial" (font_size 8)))
+		(text "rom_data_high_export[31..0]" (rect 4 141 166 152)(font "Arial" (font_size 8)))
+		(line (pt 0 152)(pt 160 152)(line_width 3))
+	)
+	(port
+		(pt 0 192)
+		(input)
+		(text "rom_data_low_export[31..0]" (rect 0 0 110 12)(font "Arial" (font_size 8)))
+		(text "rom_data_low_export[31..0]" (rect 4 181 160 192)(font "Arial" (font_size 8)))
+		(line (pt 0 192)(pt 160 192)(line_width 3))
+	)
+	(port
+		(pt 0 232)
+		(output)
+		(text "row_ctrl_export[4..0]" (rect 0 0 83 12)(font "Arial" (font_size 8)))
+		(text "row_ctrl_export[4..0]" (rect 4 221 130 232)(font "Arial" (font_size 8)))
+		(line (pt 0 232)(pt 160 232)(line_width 3))
+	)
+	(port
+		(pt 0 288)
+		(output)
+		(text "sram_ADDR[19..0]" (rect 0 0 81 12)(font "Arial" (font_size 8)))
+		(text "sram_ADDR[19..0]" (rect 4 277 100 288)(font "Arial" (font_size 8)))
+		(line (pt 0 288)(pt 160 288)(line_width 3))
+	)
+	(port
+		(pt 0 304)
+		(output)
+		(text "sram_LB_N" (rect 0 0 51 12)(font "Arial" (font_size 8)))
+		(text "sram_LB_N" (rect 4 293 58 304)(font "Arial" (font_size 8)))
+		(line (pt 0 304)(pt 160 304)(line_width 1))
+	)
+	(port
+		(pt 0 320)
+		(output)
+		(text "sram_UB_N" (rect 0 0 53 12)(font "Arial" (font_size 8)))
+		(text "sram_UB_N" (rect 4 309 58 320)(font "Arial" (font_size 8)))
+		(line (pt 0 320)(pt 160 320)(line_width 1))
+	)
+	(port
+		(pt 0 336)
+		(output)
+		(text "sram_CE_N" (rect 0 0 54 12)(font "Arial" (font_size 8)))
+		(text "sram_CE_N" (rect 4 325 58 336)(font "Arial" (font_size 8)))
+		(line (pt 0 336)(pt 160 336)(line_width 1))
+	)
+	(port
+		(pt 0 352)
+		(output)
+		(text "sram_OE_N" (rect 0 0 54 12)(font "Arial" (font_size 8)))
+		(text "sram_OE_N" (rect 4 341 58 352)(font "Arial" (font_size 8)))
+		(line (pt 0 352)(pt 160 352)(line_width 1))
+	)
+	(port
+		(pt 0 368)
+		(output)
+		(text "sram_WE_N" (rect 0 0 57 12)(font "Arial" (font_size 8)))
+		(text "sram_WE_N" (rect 4 357 58 368)(font "Arial" (font_size 8)))
+		(line (pt 0 368)(pt 160 368)(line_width 1))
+	)
+	(port
+		(pt 0 408)
+		(output)
+		(text "vga_CLK" (rect 0 0 41 12)(font "Arial" (font_size 8)))
+		(text "vga_CLK" (rect 4 397 46 408)(font "Arial" (font_size 8)))
+		(line (pt 0 408)(pt 160 408)(line_width 1))
+	)
+	(port
+		(pt 0 424)
+		(output)
+		(text "vga_HS" (rect 0 0 34 12)(font "Arial" (font_size 8)))
+		(text "vga_HS" (rect 4 413 40 424)(font "Arial" (font_size 8)))
+		(line (pt 0 424)(pt 160 424)(line_width 1))
+	)
+	(port
+		(pt 0 440)
+		(output)
+		(text "vga_VS" (rect 0 0 35 12)(font "Arial" (font_size 8)))
+		(text "vga_VS" (rect 4 429 40 440)(font "Arial" (font_size 8)))
+		(line (pt 0 440)(pt 160 440)(line_width 1))
+	)
+	(port
+		(pt 0 456)
+		(output)
+		(text "vga_BLANK" (rect 0 0 55 12)(font "Arial" (font_size 8)))
+		(text "vga_BLANK" (rect 4 445 58 456)(font "Arial" (font_size 8)))
+		(line (pt 0 456)(pt 160 456)(line_width 1))
+	)
+	(port
+		(pt 0 472)
+		(output)
+		(text "vga_SYNC" (rect 0 0 48 12)(font "Arial" (font_size 8)))
+		(text "vga_SYNC" (rect 4 461 52 472)(font "Arial" (font_size 8)))
+		(line (pt 0 472)(pt 160 472)(line_width 1))
+	)
+	(port
+		(pt 0 488)
+		(output)
+		(text "vga_R[7..0]" (rect 0 0 49 12)(font "Arial" (font_size 8)))
+		(text "vga_R[7..0]" (rect 4 477 70 488)(font "Arial" (font_size 8)))
+		(line (pt 0 488)(pt 160 488)(line_width 3))
+	)
+	(port
+		(pt 0 504)
+		(output)
+		(text "vga_G[7..0]" (rect 0 0 48 12)(font "Arial" (font_size 8)))
+		(text "vga_G[7..0]" (rect 4 493 70 504)(font "Arial" (font_size 8)))
+		(line (pt 0 504)(pt 160 504)(line_width 3))
+	)
+	(port
+		(pt 0 520)
+		(output)
+		(text "vga_B[7..0]" (rect 0 0 47 12)(font "Arial" (font_size 8)))
+		(text "vga_B[7..0]" (rect 4 509 70 520)(font "Arial" (font_size 8)))
+		(line (pt 0 520)(pt 160 520)(line_width 3))
+	)
+	(port
+		(pt 0 272)
+		(bidir)
+		(text "sram_DQ[15..0]" (rect 0 0 64 12)(font "Arial" (font_size 8)))
+		(text "sram_DQ[15..0]" (rect 4 261 88 272)(font "Arial" (font_size 8)))
+		(line (pt 0 272)(pt 160 272)(line_width 3))
+	)
+	(drawing
+		(text "clk" (rect 145 43 308 99)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "clk" (rect 165 67 348 144)(font "Arial" (color 0 0 0)))
+		(text "keys" (rect 134 83 292 179)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 165 107 366 224)(font "Arial" (color 0 0 0)))
+		(text "rom_data_high" (rect 73 123 224 259)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 165 147 366 304)(font "Arial" (color 0 0 0)))
+		(text "rom_data_low" (rect 77 163 226 339)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 165 187 366 384)(font "Arial" (color 0 0 0)))
+		(text "row_ctrl" (rect 113 203 274 419)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "export" (rect 165 227 366 464)(font "Arial" (color 0 0 0)))
+		(text "sram" (rect 131 243 286 499)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "DQ" (rect 165 267 342 544)(font "Arial" (color 0 0 0)))
+		(text "ADDR" (rect 165 283 354 576)(font "Arial" (color 0 0 0)))
+		(text "LB_N" (rect 165 299 354 608)(font "Arial" (color 0 0 0)))
+		(text "UB_N" (rect 165 315 354 640)(font "Arial" (color 0 0 0)))
+		(text "CE_N" (rect 165 331 354 672)(font "Arial" (color 0 0 0)))
+		(text "OE_N" (rect 165 347 354 704)(font "Arial" (color 0 0 0)))
+		(text "WE_N" (rect 165 363 354 736)(font "Arial" (color 0 0 0)))
+		(text "vga" (rect 141 379 300 771)(font "Arial" (color 128 0 0)(font_size 9)))
+		(text "CLK" (rect 165 403 348 816)(font "Arial" (color 0 0 0)))
+		(text "HS" (rect 165 419 342 848)(font "Arial" (color 0 0 0)))
+		(text "VS" (rect 165 435 342 880)(font "Arial" (color 0 0 0)))
+		(text "BLANK" (rect 165 451 360 912)(font "Arial" (color 0 0 0)))
+		(text "SYNC" (rect 165 467 354 944)(font "Arial" (color 0 0 0)))
+		(text "R" (rect 165 483 336 976)(font "Arial" (color 0 0 0)))
+		(text "G" (rect 165 499 336 1008)(font "Arial" (color 0 0 0)))
+		(text "B" (rect 165 515 336 1040)(font "Arial" (color 0 0 0)))
+		(text " Nios " (rect 362 536 760 1082)(font "Arial" ))
+		(line (pt 160 32)(pt 224 32)(line_width 1))
+		(line (pt 224 32)(pt 224 536)(line_width 1))
+		(line (pt 160 536)(pt 224 536)(line_width 1))
+		(line (pt 160 32)(pt 160 536)(line_width 1))
+		(line (pt 161 52)(pt 161 76)(line_width 1))
+		(line (pt 162 52)(pt 162 76)(line_width 1))
+		(line (pt 161 92)(pt 161 116)(line_width 1))
+		(line (pt 162 92)(pt 162 116)(line_width 1))
+		(line (pt 161 132)(pt 161 156)(line_width 1))
+		(line (pt 162 132)(pt 162 156)(line_width 1))
+		(line (pt 161 172)(pt 161 196)(line_width 1))
+		(line (pt 162 172)(pt 162 196)(line_width 1))
+		(line (pt 161 212)(pt 161 236)(line_width 1))
+		(line (pt 162 212)(pt 162 236)(line_width 1))
+		(line (pt 161 252)(pt 161 372)(line_width 1))
+		(line (pt 162 252)(pt 162 372)(line_width 1))
+		(line (pt 161 388)(pt 161 524)(line_width 1))
+		(line (pt 162 388)(pt 162 524)(line_width 1))
+		(line (pt 0 0)(pt 384 0)(line_width 1))
+		(line (pt 384 0)(pt 384 552)(line_width 1))
+		(line (pt 0 552)(pt 384 552)(line_width 1))
+		(line (pt 0 0)(pt 0 552)(line_width 1))
+	)
+)

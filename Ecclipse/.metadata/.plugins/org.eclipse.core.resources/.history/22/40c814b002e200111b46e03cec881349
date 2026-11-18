@@ -1,0 +1,51 @@
+#include <stdint.h>
+#include <unistd.h>
+#include "system.h"
+#include "io.h"
+#include "altera_avalon_pio_regs.h"
+
+// 16-bit RGB (RGB565) colors
+#define COLOR_BLACK 0x0000
+#define COLOR_WHITE 0xFFFF
+
+// Empty straight track row (bits 39..27 = 1, bits 26..13 = 0, bits 12..0 = 1)
+#define EMPTY_ROAD_ROW 0x000000FFF8001FFFULL
+
+// Player car fixed vertical row & horizontal bounds (inside road bits 26..13)
+#define CAR_ROW      25
+#define CAR_MIN_COL  13
+#define CAR_MAX_COL  25
+
+// Active 40-column by 30-row screen array
+uint64_t screen_rows[30];
+
+// Draw a single 8x8 block at grid cell (grid_x, grid_y) in SRAM
+void draw_block(uint32_t buffer_base, int grid_x, int grid_y, uint16_t color) {
+    int start_x = grid_x * 8;
+    int start_y = grid_y * 8;
+
+    for (int dy = 0; dy < 8; dy++) {
+        for (int dx = 0; dx < 8; dx++) {
+            uint32_t offset = ((start_y + dy) << 10) + ((start_x + dx) << 1);
+            IOWR_16DIRECT(buffer_base, offset, color);
+        }
+    }
+}
+
+// Fetch the next row from mem1 via PIOs and advance row_cnt (0..15)
+uint64_t fetch_next_rom_row(uint8_t *row_cnt) {
+    // Set row_cnt[3..0] with next_btn (bit 4) = 0
+    IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, (*row_cnt & 0x0F));
+    usleep(5); // Wait 1+ clock cycles for synchronous ROM output q[63..0]
+
+    uint32_t low  = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_LOW_BASE);
+    uint32_t high = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_HIGH_BASE);
+    uint64_t row_bits = ((uint64_t)high << 32) | (uint64_t)low;
+
+    // Advance row index; when wrapping past row 15, pulse next_btn (bit 4) for new RNG segment
+    (*row_cnt)++;
+    if (*row_cnt >= 16) {
+        *row_cnt = 0;
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x10); // next_btn HIGH
+        usleep(5);
+        IOWR_ALTER

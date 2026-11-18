@@ -1,0 +1,127 @@
+#include <stdint.h>
+#include <unistd.h>
+#include "system.h"
+#include "io.h"
+#include "altera_avalon_pio_regs.h"
+
+// 16-bit RGB (RGB565) colors
+#define COLOR_BLACK 0x0000
+#define COLOR_WHITE 0xFFFF
+
+// Empty straight track row (bits 39..27 = 1, bits 26..13 = 0, bits 12..0 = 1)
+#define EMPTY_ROAD_ROW 0x000000FFF8001FFFULL
+
+// Player car fixed vertical row & horizontal bounds (inside road bits 26..13)
+#define CAR_ROW      25
+#define CAR_MIN_COL  13
+#define CAR_MAX_COL  25
+
+// Active 40-column by 30-row screen array
+uint64_t screen_rows[30];
+
+// Draw a single 8x8 block at grid cell (grid_x, grid_y) in SRAM
+void draw_block(uint32_t buffer_base, int grid_x, int grid_y, uint16_t color) {
+    int start_x = grid_x * 8;
+    int start_y = grid_y * 8;
+
+    for (int dy = 0; dy < 8; dy++) {
+        for (int dx = 0; dx < 8; dx++) {
+            uint32_t offset = ((start_y + dy) << 10) + ((start_x + dx) << 1);
+            IOWR_16DIRECT(buffer_base, offset, color);
+        }
+    }
+}
+
+// Fetch the next row from mem1 via PIOs and advance row_cnt (0..15)
+uint64_t fetch_next_rom_row(uint8_t *row_cnt) {
+    // Set row_cnt[3..0] with next_btn (bit 4) = 0
+    IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, (*row_cnt & 0x0F));
+    usleep(5); // Wait 1+ clock cycles for synchronous ROM output q[63..0]
+
+    uint32_t low  = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_LOW_BASE);
+    uint32_t high = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_HIGH_BASE);
+    uint64_t row_bits = ((uint64_t)high << 32) | (uint64_t)low;
+
+    // Advance row index; when wrapping past row 15, pulse next_btn (bit 4) for new RNG segment
+    (*row_cnt)++;
+    if (*row_cnt >= 16) {
+        *row_cnt = 0;
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x10); // next_btn HIGH
+        usleep(5);
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x00); // next_btn LOW
+    }
+
+    return row_bits;
+}
+
+// Shift all 30 screen rows down by 1 and insert the new top row at index 0
+void scroll_track_down(uint64_t new_top_row) {
+    for (int y = 29; y > 0; y--) {
+        screen_rows[y] = screen_rows[y - 1];
+    }
+    screen_rows[0] = new_top_row;
+}
+
+// Render the full 40x30 grid, dashed center line, and 2x2 player car
+void render_frame(uint32_t buffer_base, int car_col, uint32_t frame_tick) {
+    for (int y = 0; y < 30; y++) {
+        uint64_t row_bits = screen_rows[y];
+
+        for (int col = 0; col < 40; col++) {
+            int bit_pos = 39 - col;
+            uint8_t is_solid = (row_bits >> bit_pos) & 0x1;
+
+            // Check if this cell belongs to the 2x2 player car (rows 25-26, cols car_col..car_col+1)
+            uint8_t is_car = ((y == CAR_ROW || y == CAR_ROW + 1) &&
+                              (col == car_col || col == car_col + 1));
+
+            // Visual dashed center line at col 20 (scrolls with frame_tick)
+            uint8_t is_center_dash = (col == 20 && ((y + frame_tick) % 4 != 0));
+
+            if (is_car || is_center_dash || (is_solid && col >= 12 && col <= 27)) {
+                draw_block(buffer_base, col, y, COLOR_WHITE);
+            } else {
+                draw_block(buffer_base, col, y, COLOR_BLACK);
+            }
+        }
+    }
+}
+
+int main(void) {
+    uint32_t pixel_buf_base = SRAM_0_BASE;
+
+    // Point Pixel Buffer DMA to SRAM_0_BASE
+    IOWR_32DIRECT(VIDEO_PIXEL_BUFFER_DMA_0_BASE, 0, pixel_buf_base);
+    IOWR_32DIRECT(VIDEO_PIXEL_BUFFER_DMA_0_BASE, 4, pixel_buf_base);
+
+    // Initialize screen with empty straight road
+    for (int y = 0; y < 30; y++) {
+        screen_rows[y] = EMPTY_ROAD_ROW;
+    }
+
+    uint8_t row_cnt = 0;
+    int car_col = 19; // Start centered on road
+    uint32_t frame_tick = 0;
+
+    while (1) {
+        // 1. Read pushbuttons (active-low on DE2-115: 0 = pressed)
+        uint32_t keys = IORD_ALTERA_AVALON_PIO_DATA(KEYS_BASE);
+        if ((keys & 0x2) == 0 && car_col > CAR_MIN_COL) { // Left button pressed
+            car_col--;
+        }
+        if ((keys & 0x1) == 0 && car_col < CAR_MAX_COL) { // Right button pressed
+            car_col++;
+        }
+
+        // 2. Fetch next row from ROM and shift screen_rows[30] down
+        uint64_t next_row = fetch_next_rom_row(&row_cnt);
+        scroll_track_down(next_row);
+
+        // 3. Draw frame and control scroll speed (~12.5 rows/sec -> 80,000 us delay)
+        render_frame(pixel_buf_base, car_col, frame_tick);
+        frame_tick++;
+        usleep(80000);
+    }
+
+    return 0;
+}

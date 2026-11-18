@@ -1,0 +1,90 @@
+#include <stdint.h>
+#include <unistd.h>
+#include "system.h"
+#include "io.h"
+#include "altera_avalon_pio_regs.h"
+
+// Color definitions for 16-bit RGB (RGB565)
+#define COLOR_BLACK 0x0000
+#define COLOR_WHITE 0xFFFF
+
+// 320x240 Pixel Buffer resolution (40x30 grid of 8x8 blocks)
+#define SCREEN_W 320
+#define SCREEN_H 240
+
+// Helper: Draw a single 8x8 block at grid cell (grid_x, grid_y) in SRAM
+void draw_block(uint32_t buffer_base, int grid_x, int grid_y, uint16_t color) {
+    int start_x = grid_x * 8;
+    int start_y = grid_y * 8;
+
+    for (int dy = 0; dy < 8; dy++) {
+        for (int dx = 0; dx < 8; dx++) {
+            // Standard X-Y addressing offset for 320x240 16-bit pixel buffer:
+            // Byte offset = (y << 10) + (x << 1)
+            uint32_t offset = ((start_y + dy) << 10) + ((start_x + dx) << 1);
+            IOWR_16DIRECT(buffer_base, offset, color);
+        }
+    }
+}
+
+// Helper: Clear the entire 320x240 screen to black
+void clear_screen(uint32_t buffer_base) {
+    for (int y = 0; y < 30; y++) {
+        for (int x = 0; x < 40; x++) {
+            draw_block(buffer_base, x, y, COLOR_BLACK);
+        }
+    }
+}
+
+int main(void) {
+    // Use the SRAM base address mapped to your Pixel Buffer DMA (0x00200000)
+    uint32_t pixel_buf_base = SRAM_0_BASE;
+
+    // Ensure Pixel Buffer DMA points to SRAM_0_BASE (Front & Back buffer registers)
+    IOWR_32DIRECT(VIDEO_PIXEL_BUFFER_DMA_0_BASE, 0, pixel_buf_base);
+    IOWR_32DIRECT(VIDEO_PIXEL_BUFFER_DMA_0_BASE, 4, pixel_buf_base);
+
+    clear_screen(pixel_buf_base);
+
+    while (1) {
+        // 1. Read all 16 rows of the current segment from mem1 via PIOs
+        for (int row = 0; row < 16; row++) {
+            // Output row index (bits 3..0) with next_btn = 0 (bit 4)
+            IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, (row & 0x0F));
+
+            // Small delay to ensure synchronous ROM (mem1) updates q[63..0]
+            usleep(10);
+
+            // Reconstruct the 64-bit row bitmask from the two 32-bit PIOs
+            uint32_t low  = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_LOW_BASE);
+            uint32_t high = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_HIGH_BASE);
+            uint64_t row_bits = ((uint64_t)high << 32) | (uint64_t)low;
+
+            // 2. Draw this row across the 40-column grid (centered vertically at rows 7..22)
+            int screen_y = row + 7;
+            for (int col = 0; col < 40; col++) {
+                // Bit 39 is left edge (col 0), Bit 0 is right edge (col 39)
+                int bit_pos = 39 - col;
+                uint8_t is_solid = (row_bits >> bit_pos) & 0x1;
+
+                // Only draw white for the road walls (col 12, 27) and road obstacles (col 13..26)
+                // Keep outer grass (col 0..11 and 28..39) black so it matches your Phase 1 image
+                if (is_solid && (col >= 12 && col <= 27)) {
+                    draw_block(pixel_buf_base, col, screen_y, COLOR_WHITE);
+                } else {
+                    draw_block(pixel_buf_base, col, screen_y, COLOR_BLACK);
+                }
+            }
+        }
+
+        // 3. Pulse row_ctrl[4] (RowDone / next_btn) HIGH then LOW so rng picks a new segment
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x10);
+        usleep(1000);
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x00);
+
+        // 4. Wait 1 second before drawing the next random map segment
+        usleep(1000000);
+    }
+
+    return 0;
+}

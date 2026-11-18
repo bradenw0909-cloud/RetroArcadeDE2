@@ -1,25 +1,86 @@
-Depth = 32;
-Width = 8;
-Address_radix = dec;
-Data_radix = bin;
-Content
-  Begin
-0  : 00000011 ;
-1  : 00101111 ;
-2  : 00001000 ;
-3  : 00100001 ;
-4  : 00000110 ;
-5  : 00101011 ;
-6  : 01111111 ;
-7  : 01010101 ;
+WIDTH=64;
+DEPTH=64;
+ADDRESS_RADIX=DEC;
+DATA_RADIX=HEX;
 
-8  : 00001000 ;
-9 : 01000111 ;
-10 : 00001001 ;
-11 : 00000110 ;
-12 : 00101111 ;
-13 : 11111111 ;
-14 : 01111111 ;
-15 : 01111111 ;
+CONTENT BEGIN
+-- ============================================================================
+-- SEGMENT 0 (Addresses 0..15): Straight Track - Open Slalom
+-- ============================================================================
+0  : 000000FFF8001FFF; -- Open road
+1  : 000000FFF8001FFF;
+2  : 000000FFF9801FFF; -- 2x2 Car: cols 15..16 (Left lane)
+3  : 000000FFF9801FFF;
+4  : 000000FFF8001FFF; -- 5-row reaction gap
+5  : 000000FFF8001FFF;
+6  : 000000FFF8001FFF;
+7  : 000000FFF8001FFF;
+8  : 000000FFF8001FFF;
+9  : 000000FFF8019FFF; -- 2x2 Car: cols 23..24 (Right lane)
+10 : 000000FFF8019FFF;
+11 : 000000FFF8001FFF; -- 5-row reaction gap
+12 : 000000FFF8001FFF;
+13 : 000000FFF8001FFF;
+14 : 000000FFF8001FFF;
+15 : 000000FFF8001FFF;
 
-End;
+-- ============================================================================
+-- SEGMENT 1 (Addresses 16..31): Straight Track - Wide Split & Center Dodge
+-- ============================================================================
+16 : 000000FFF8001FFF; -- Open road
+17 : 000000FFF8001FFF;
+18 : 000000FFFE007FFF; -- Two 2x2 Cars: cols 13..14 & 25..26 (Wide 10-col center gap)
+19 : 000000FFFE007FFF;
+20 : 000000FFF8001FFF; -- 5-row reaction gap
+21 : 000000FFF8001FFF;
+22 : 000000FFF8001FFF;
+23 : 000000FFF8001FFF;
+24 : 000000FFF8001FFF;
+25 : 000000FFF8181FFF; -- 2x2 Car: cols 19..20 (Center dodge, 6-col gaps both sides)
+26 : 000000FFF8181FFF;
+27 : 000000FFF8001FFF; -- 5-row reaction gap
+28 : 000000FFF8001FFF;
+29 : 000000FFF8001FFF;
+30 : 000000FFF8001FFF;
+31 : 000000FFF8001FFF;
+
+-- ============================================================================
+-- SEGMENT 2 (Addresses 32..47): Straight Track - Two-Car Weave
+-- ============================================================================
+32 : 000000FFF8001FFF; -- Open road
+33 : 000000FFF8001FFF;
+34 : 000000FFFE061FFF; -- Two 2x2 Cars: cols 13..14 & 21..22 (4-col gaps: 15..20 or 23..26)
+35 : 000000FFFE061FFF;
+36 : 000000FFF8001FFF; -- 5-row reaction gap
+37 : 000000FFF8001FFF;
+38 : 000000FFF8001FFF;
+39 : 000000FFF8001FFF;
+40 : 000000FFF8001FFF;
+41 : 000000FFF8607FFF; -- Two 2x2 Cars: cols 17..18 & 25..26 (4-col gaps: 13..16 or 19..24)
+42 : 000000FFF8607FFF;
+43 : 000000FFF8001FFF; -- 5-row reaction gap
+44 : 000000FFF8001FFF;
+45 : 000000FFF8001FFF;
+46 : 000000FFF8001FFF;
+47 : 000000FFF8001FFF;
+
+-- ============================================================================
+-- SEGMENT 3 (Addresses 48..63): Straight Track - Center Chute & Side Check
+-- ============================================================================
+48 : 000000FFF8001FFF; -- Open road
+49 : 000000FFF8001FFF;
+50 : 000000FFF9819FFF; -- Two 2x2 Cars: cols 15..16 & 23..24 (6-col center chute: 17..22)
+51 : 000000FFF9819FFF;
+52 : 000000FFF8001FFF; -- 4-row reaction gap
+53 : 000000FFF8001FFF;
+54 : 000000FFF8001FFF;
+55 : 000000FFF8001FFF;
+56 : 000000FFF8601FFF; -- 2x2 Car: cols 17..18 (Left-center check, wide right lane 19..26)
+57 : 000000FFF8601FFF;
+58 : 000000FFF8001FFF; -- 6-row exit buffer for smooth transition into next segment
+59 : 000000FFF8001FFF;
+60 : 000000FFF8001FFF;
+61 : 000000FFF8001FFF;
+62 : 000000FFF8001FFF;
+63 : 000000FFF8001FFF;
+END;

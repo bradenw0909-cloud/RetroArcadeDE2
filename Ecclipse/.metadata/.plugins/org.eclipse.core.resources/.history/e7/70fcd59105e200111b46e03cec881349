@@ -1,0 +1,129 @@
+#include <stdint.h>
+#include <unistd.h>
+#include "system.h"
+#include "io.h"
+#include "altera_avalon_pio_regs.h"
+
+#define COLOR_BLACK    0x0000
+#define COLOR_WHITE    0xFFFF
+#define EMPTY_ROAD_ROW 0x000000FFF8001FFFULL
+
+#define CAR_ROW      25
+#define CAR_MIN_COL  13
+#define CAR_MAX_COL  25
+
+uint64_t screen_rows[30];
+
+void draw_block(uint32_t buffer_base, int grid_x, int grid_y, uint16_t color) {
+    int start_x = grid_x * 8;
+    int start_y = grid_y * 8;
+
+    for (int dy = 0; dy < 8; dy++) {
+        for (int dx = 0; dx < 8; dx++) {
+            uint32_t offset = ((start_y + dy) << 10) + ((start_x + dx) << 1);
+            IOWR_16DIRECT(buffer_base, offset, color);
+        }
+    }
+}
+
+uint64_t fetch_next_rom_row(uint8_t *row_cnt) {
+    IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, (*row_cnt & 0x0F));
+    usleep(5);
+
+    uint32_t low  = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_LOW_BASE);
+    uint32_t high = IORD_ALTERA_AVALON_PIO_DATA(ROM_DATA_HIGH_BASE);
+    uint64_t row_bits = ((uint64_t)high << 32) | (uint64_t)low;
+
+    (*row_cnt)++;
+    if (*row_cnt >= 16) {
+        *row_cnt = 0;
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x10);
+        usleep(5);
+        IOWR_ALTERA_AVALON_PIO_DATA(ROW_CTRL_BASE, 0x00);
+    }
+    return row_bits;
+}
+
+void scroll_track_down(uint64_t new_top_row) {
+    for (int y = 29; y > 0; y--) {
+        screen_rows[y] = screen_rows[y - 1];
+    }
+    screen_rows[0] = new_top_row;
+}
+
+void render_frame(uint32_t buffer_base, int car_col, uint32_t frame_tick) {
+    uint32_t phase = frame_tick & 0x3;
+
+    for (int y = 0; y < 30; y++) {
+        uint64_t row_bits = screen_rows[y];
+
+        for (int col = 0; col < 40; col++) {
+            int bit_pos = 39 - col;
+            uint8_t is_solid = (row_bits >> bit_pos) & 0x1;
+
+            uint8_t is_car = ((y == CAR_ROW || y == CAR_ROW + 1) &&
+                              (col == car_col || col == car_col + 1));
+
+            uint8_t is_center_dash = (col == 20 && (((y - phase) & 0x3) != 0));
+
+            if (is_car || is_center_dash || (is_solid && col >= 12 && col <= 27)) {
+                draw_block(buffer_base, col, y, COLOR_WHITE);
+            } else {
+                draw_block(buffer_base, col, y, COLOR_BLACK);
+            }
+        }
+    }
+}
+
+int main(void) {
+    uint32_t pixel_buf_base = SRAM_0_BASE;
+
+    IOWR_32DIRECT(VIDEO_PIXEL_BUFFER_DMA_0_BASE, 0, pixel_buf_base);
+    IOWR_32DIRECT(VIDEO_PIXEL_BUFFER_DMA_0_BASE, 4, pixel_buf_base);
+
+    for (int y = 0; y < 30; y++) {
+        screen_rows[y] = EMPTY_ROAD_ROW;
+    }
+
+    uint8_t row_cnt = 0;
+    int car_col = 19;
+    uint32_t frame_tick = 0;
+
+    while (1) {
+        // 1. Read DE2-115 pushbuttons (active-low: 0 = pressed)
+        uint32_t keys = IORD_ALTERA_AVALON_PIO_DATA(KEYS_BASE);
+        if ((keys & 0x2) == 0 && car_col > CAR_MIN_COL) {
+            car_col--;
+        }
+        if ((keys & 0x1) == 0 && car_col < CAR_MAX_COL) {
+            car_col++;
+        }
+
+        // 2. Fetch next row from ROM and shift screen_rows[30] down
+        uint64_t next_row = fetch_next_rom_row(&row_cnt);
+        scroll_track_down(next_row);
+
+        // 3. 1D Bitmask Collision Detection on Row 25
+        // Maps grid columns (car_col, car_col+1) to bit positions (39 - car_col) and (38 - car_col)
+        uint64_t car_mask = (0x3ULL << (38 - car_col));
+        if ((screen_rows[CAR_ROW] & car_mask) != 0) {
+            // Render the crash frame so the player sees the impact, pause 0.5s, then reset
+            render_frame(pixel_buf_base, car_col, frame_tick);
+            usleep(500000);
+
+            for (int y = 0; y < 30; y++) {
+                screen_rows[y] = EMPTY_ROAD_ROW;
+            }
+            car_col = 19;
+            row_cnt = 0;
+            continue;
+        }
+
+        // 4. Render frame and pace loop (~12.5 rows/sec)
+        render_frame(pixel_buf_base, car_col, frame_tick);
+        frame_tick++;
+        usleep(80000);
+    }
+
+    return 0;
+}
